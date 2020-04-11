@@ -18,7 +18,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.   
 ***********************************************************************************/
-#define IOTAWATT_VERSION "02_05_04"
+#define IOTAWATT_VERSION "02_05_07"
 #define DEVICE_NAME "IotaWatt"
 
 #define PRINT(txt,val) Serial.print(txt); Serial.print(val);      // Quick debug aids
@@ -31,7 +31,7 @@
 #include <EEPROM.h>
 #include <ESP8266WiFi.h>
 #include <WiFiManager.h>
-#include <ESP8266mDNS.h>
+#include "ESP8266mDNS_Legacy.h"
 #include <ESP8266LLMNR.h>
 #include <DNSServer.h> 
 #include <WiFiClient.h>
@@ -71,13 +71,14 @@
 #include "CSVquery.h"
 #include "xurl.h"
 
-
-      // Declare instances of major classes
+      // Declare global instances of classes
 
 extern WiFiClient WifiClient;
 extern WiFiManager wifiManager;
 extern ESP8266WebServer server;
 extern DNSServer dnsServer;
+using MDNSResponder = Legacy_MDNSResponder::MDNSResponder;
+extern MDNSResponder MDNS;
 extern IotaLog currLog;
 extern IotaLog histLog;
 extern RTC_PCF8523 rtc;
@@ -197,7 +198,7 @@ enum priorities: byte {priorityLow=3, priorityMed=2, priorityHigh=1};
 
 struct serviceBlock {                  // Scheduler/Dispatcher list item (see comments in Loop)
   serviceBlock* next;                  // Next serviceBlock in list
-  uint32_t callTime;                   // Time (in NTP seconds) to dispatch
+  uint32_t callTime;                   // Time in millis to dispatch
   uint32_t (*service)(serviceBlock*);  // the SERVICE
   priorities priority;                 // All things equal tie breaker
   uint8_t   taskID;
